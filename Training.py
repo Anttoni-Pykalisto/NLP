@@ -2,11 +2,14 @@ from Finding import Finding
 from os import listdir
 from os.path import isfile, join
 
+
+
 # positiveFiles = ['TrainingText/positiveReviews/' + f for f in listdir('TrainingText/positiveReviews/') if isfile(join('TrainingText/positiveReviews/', f))]
 
 text = "The quick brown fox jumps over the lazy dog. There is also a cat."
 
 #with open(positiveFiles[0], "r", encoding="utf-8") as f:
+
 #    line = f.readline()
 #    text += line
 

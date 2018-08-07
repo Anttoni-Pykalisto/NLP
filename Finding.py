@@ -1,4 +1,7 @@
 import re
+import nltk
+from nltk.tokenize import RegexpTokenizer
+
 
 class Finding:
 
@@ -8,14 +11,18 @@ class Finding:
         self.tokens, self.sentences = self.creatingTokens();
         
     def creatingTokens(self):
-        sentences=[];
-        processedString = self.cleanSentences()
-        raw_sentences=self.text.split('.');
-        for sentence in raw_sentences:
-            sentences.append(sentence.split())
-        sentences=[x for x in sentences if x!=[]]
+        tokenizer = RegexpTokenizer(r'\w+')
+        tokens=[]
+        sentence=[]
+        processedString = nltk.sent_tokenize(self.text);
+        for sentences in processedString:
 
-        return [processedString.split(),sentences]
+            tokens+=tokenizer.tokenize(sentences)
+            sentence.append(tokenizer.tokenize(sentences))
+
+
+        return [tokens,sentence]
+
 
     def cleanSentences(self):
         strip_special_chars = re.compile("[^A-Za-z0-9 ]+")
