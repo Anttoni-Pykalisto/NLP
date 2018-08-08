@@ -5,7 +5,7 @@ from os.path import isfile, join
 
 # positiveFiles = ['TrainingText/positiveReviews/' + f for f in listdir('TrainingText/positiveReviews/') if isfile(join('TrainingText/positiveReviews/', f))]
 
-text = "The quick b'rown fo.x jumps over the_lazy dog. There is also a cat-79 it has AIDS"
+text = "The quick b'rown fo.x jumped over the lazy dog. There is also a cat-79 it is meowing"
 
 #with open(positiveFiles[0], "r", encoding="utf-8") as f:
 
@@ -30,12 +30,17 @@ int2word={}
 
 vocab_size=len(words) #give total number of unique words
 
+print(vocab_size)
+
 for i,word in enumerate(words):
 	word2int[word]=i
 	int2word[i]=word
 
-print(word2int['quick'])
-print(int2word[2])
+for i in range(0, vocab_size):
+	print(int2word[i])
+
+# print(word2int['quick'])
+# print(int2word[2])
 
 trainingData=[]
 
@@ -46,7 +51,7 @@ data=[]
 for sentence in finding.sentences:
 	for word_index,word in enumerate(sentence):
 		for nb_word in sentence[max(word_index-windowSize,0):min(word_index+windowSize,len(sentence))+1]:
-			if nb_word !=word:
+			if nb_word != word:
 				data.append([word,nb_word])
 
 print(str(data))

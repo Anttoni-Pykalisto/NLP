@@ -2,6 +2,7 @@ import re
 import nltk
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
 
 
 class Finding:
@@ -12,14 +13,15 @@ class Finding:
         self.tokens, self.sentences = self.creatingTokens()
 
     def creatingTokens(self):
-        tokenizer = RegexpTokenizer(r'\s+', gaps=True)
+        tokenizer = RegexpTokenizer(r'\s+', gaps = True)
         stop_words = set(stopwords.words('english'))
+        stemmer = SnowballStemmer("english", ignore_stopwords = True)
         tokens = []
         sentence = []
         processedString = nltk.sent_tokenize(self.text)
         for sentences in processedString:
             temp_tokens = tokenizer.tokenize(sentences)
-            temp_tokens = [self.cleanTokens(t.lower()) for t in temp_tokens if not t in stop_words]
+            temp_tokens = [stemmer.stem(self.cleanTokens(t.lower())) for t in temp_tokens if not t in stop_words]
             tokens += temp_tokens
             sentence.append(temp_tokens)
 
