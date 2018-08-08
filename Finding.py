@@ -1,6 +1,7 @@
 import re
 import nltk
 from nltk.tokenize import RegexpTokenizer
+from nltk.corpus import stopwords
 
 
 class Finding:
@@ -9,17 +10,18 @@ class Finding:
         self.id = id
         self.text = text
         self.tokens, self.sentences = self.creatingTokens();
-        
+
     def creatingTokens(self):
         tokenizer = RegexpTokenizer(r'\w+')
+        stop_words = set(stopwords.words('english'))
         tokens=[]
         sentence=[]
         processedString = nltk.sent_tokenize(self.text);
         for sentences in processedString:
-
-            tokens+=tokenizer.tokenize(sentences)
-            sentence.append(tokenizer.tokenize(sentences))
-
+            temp_tokens=tokenizer.tokenize(sentences)
+            temp_tokens=[t for t in temp_tokens if not t in stop_words]
+            tokens+=temp_tokens
+            sentence.append(temp_tokens)
 
         return [tokens,sentence]
 

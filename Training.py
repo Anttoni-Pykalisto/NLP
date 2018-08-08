@@ -3,10 +3,9 @@ from os import listdir
 from os.path import isfile, join
 
 
-
 # positiveFiles = ['TrainingText/positiveReviews/' + f for f in listdir('TrainingText/positiveReviews/') if isfile(join('TrainingText/positiveReviews/', f))]
 
-text = "The quick brown fox jumps over the lazy dog. There is also a cat."
+text = "The quick brown fox jumps over the_lazy dog. There is also a cat-79; it has AIDS"
 
 #with open(positiveFiles[0], "r", encoding="utf-8") as f:
 
@@ -40,7 +39,7 @@ print(int2word[2]);
 
 trainingData=[]
 
-windowSize=2
+windowSize=1;
 
 data=[]
 
