@@ -5,7 +5,7 @@ from os.path import isfile, join
 
 # positiveFiles = ['TrainingText/positiveReviews/' + f for f in listdir('TrainingText/positiveReviews/') if isfile(join('TrainingText/positiveReviews/', f))]
 
-text = "The quick b'rown fo.x jumped over the lazy dog. There is also a cat-79 it is meowing"
+text = "The quick b'rown dbOpera_Warehouse jumped over the lazy dog nlp@gmail.com. There's also a cat-79. It is meowing"
 
 #with open(positiveFiles[0], "r", encoding="utf-8") as f:
 
@@ -23,7 +23,7 @@ words = []
 for word in finding.tokens: #create dictionary
 	words.append(word)
 
-words=set(words) #remove duplicate words
+words=sorted(set(words),key=str.lower) #remove duplicate words
 
 word2int={}
 int2word={}
