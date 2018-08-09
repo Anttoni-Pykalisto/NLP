@@ -1,7 +1,9 @@
 from Finding import Finding
 from os import listdir
 from os.path import isfile, join
-
+import numpy as np
+import csv
+import os
 
 # positiveFiles = ['TrainingText/positiveReviews/' + f for f in listdir('TrainingText/positiveReviews/') if isfile(join('TrainingText/positiveReviews/', f))]
 
@@ -34,7 +36,31 @@ vocab_size=len(words) #give total number of unique words
 
 print(vocab_size)
 
-for i,word in enumerate(words):
+def write_dict_to_csv(filePath,data): #function to write fictionary to a csv file
+	with open(filePath, 'w',newline='') as csvfile:
+		writer=csv.writer(csvfile, dialect='excel',quoting=csv.QUOTE_NONNUMERIC)
+		for d in data:
+			writer.writerow(d)
+
+def read_csv_as_dict(filePath):
+	with open(filePath) as csvfile:
+		reader=csv.reader(csvfile,dialect='excel',quoting=csv.QUOTE_NONNUMERIC)
+		datalist=[]
+		datalist=list(reader)
+		for data in datalist: #convert the number strings into integers
+			data[0]=int(data[0])
+		return(datalist)
+
+
+currentPath=os.getcwd()
+filePath=currentPath+"dict.csv"
+
+write_dict_to_csv(filePath,list(enumerate(words)))
+dictionary=read_csv_as_dict(filePath)
+
+#print(dictionary)
+
+for i,word in dictionary: #Generate word2int and int2word indexes
 	word2int[word]=i
 	int2word[i]=word
 	print(int2word[i])
@@ -55,3 +81,18 @@ for sentence in finding.sentences:
 				data.append([word,nb_word])
 
 print(str(data))
+
+def to_one_hot (data_point_index,vocab_size):
+	temp=np.zeros(vocab_size)
+	temp[data_point_index]=1
+	return temp
+
+x_train=[] #input words
+y_train=[] #output words
+
+for data_word in data:
+	x_train.append(to_one_hot(word2int[data_word[0]],vocab_size))
+	y_train.append(to_one_hot(word2int[data_word[1]],vocab_size))
+
+x_train=np.asarray(x_train) #convert list to array
+y_train=np.asarray(y_train) #convert list to array
