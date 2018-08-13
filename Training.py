@@ -42,6 +42,7 @@ def write_dict_to_csv(filePath,data): #function to write fictionary to a csv fil
 		for d in data:
 			writer.writerow(d)
 
+
 def read_csv_as_dict(filePath):
 	with open(filePath) as csvfile:
 		reader=csv.reader(csvfile,dialect='excel',quoting=csv.QUOTE_NONNUMERIC)
@@ -96,3 +97,4 @@ for data_word in data:
 
 x_train=np.asarray(x_train) #convert list to array
 y_train=np.asarray(y_train) #convert list to array
+
