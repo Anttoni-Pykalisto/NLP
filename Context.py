@@ -12,7 +12,3 @@ class Context:
 						temp_data.append([word,nb_word])
 			data.append(temp_data)
 		return data
-
-context1=Context([['cat','dog','car']],1)
-
-print(context1.context)

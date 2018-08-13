@@ -22,11 +22,10 @@ class Finding:
         processedString = nltk.sent_tokenize(self.text)
         for sentences in processedString:
             temp_tokens = tokenizer.tokenize(sentences)
-            temp_tokens=[self.cleanTokens(t) for t in temp_tokens]
+            temp_tokens = [self.cleanTokens(t) for t in temp_tokens]
             temp_tokens = [stemmer.stem(t) for t in temp_tokens if not t in stop_words]
             tokens += temp_tokens
             sentence.append(temp_tokens)
-
         return [tokens,sentence]
 
 
