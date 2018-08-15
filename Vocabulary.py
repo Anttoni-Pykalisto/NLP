@@ -29,9 +29,11 @@ class  Vocabulary:
                 if self.max_size is not None and self.max_size == index:
                     break
 
+    @classmethod
     def getWord(self, index):
         return self.word_list[index]
 
+    @classmethod
     def getIndex(self, word):
         return self.word_to_index.get(word)
 
@@ -48,15 +50,12 @@ class  Vocabulary:
         f = open("vocabulary.txt","w+")
         for word, count in self.count.items():
             f.write(word + ": " + str(count) + '\n')
-        self.count.clear()
         f.close()
         f = open("word_list.txt","w+")
         for word in self.word_list:
             f.write(word + '\n')
-        self.count.clear()
         f.close()
         f = open("index_to_word.txt","w+")
         for word, index in self.word_to_index.items():
             f.write(word + ": " + str(index) + '\n')
-        self.count.clear()
         f.close()
