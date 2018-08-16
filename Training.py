@@ -16,7 +16,7 @@ all_text = []
 text = ''
 
 #Create vocabulary
-vocabulary = Vocabulary(min_frequency = 1, max_size = 50)
+vocabulary = Vocabulary(min_frequency = 1, max_size = 100)
 
 index = 0
 for f in training_files:
@@ -34,8 +34,8 @@ context = Context(all_text, 2)
 vocabulary.buildDataSets()
 vocabulary.saveToFile()
 
-batch = BatchList(context.context, 30)
-model = Model(batch_size = batch.batch_size, embedding_size = 5, vocabulary_size = len(vocabulary.word_list))
+batch = BatchList(context.context, 30, len(vocabulary.word_list))
+model = Model(batch_size = batch.batch_size, embedding_size = 10, vocabulary_size = len(vocabulary.word_list))
 
 model.startTraining(batch)
 print("success?")
@@ -112,4 +112,3 @@ print("success?")
 
 # x_train=np.asarray(x_train) #convert list to array
 # y_train=np.asarray(y_train) #convert list to array
-

@@ -39,11 +39,6 @@ class Model:
             tf.nn.softmax_cross_entropy_with_logits_v2(
                 labels=self.train_labels, logits=self.logits), 
                 axis = 0)
-    
-    def computeCrossEntropyLoss(self):
-        # self.loss = tf.reduce_mean(
-        #     tf.nn.softmax_cross_entropy_with_logits(labels = , logits = ), axis = 0)
-        pass
 
     def createSGDOptimizer(self):
         self.optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(self.loss)
@@ -81,12 +76,19 @@ class Model:
         with tf.Session() as sess:
             sess.run(self.init)
             average_loss = 0
-            next_batch = batch.next()
-            while next_batch is not None:
-                _, loss_value = sess.run([self.optimizer, self.loss], feed_dict = {self.train_dataset : next_batch[0], self.train_labels : next_batch[1]})
-                average_loss += loss_value
-                print(average_loss)
+            iteration = 1
+            for x in range(10):
                 next_batch = batch.next()
+                while next_batch is not None:
+                    _, loss_value = sess.run([self.optimizer, self.loss], feed_dict = {self.train_dataset : next_batch[0], self.train_labels : next_batch[1]})
+                    average_loss += loss_value
+                    mean_loss = average_loss / iteration
+                    iteration += 1
+                    print("iteration:", iteration)
+                    print("mean loss:", mean_loss)
+                    next_batch = batch.next()
+                print("----------------------------------------")
+                print(self.embeddings.eval())
 
 # loss = tf.nn.softmax_cross_entropy_with_logits(labels = y, logits = x)
 # mean_loss = tf.reduce_mean(loss, axis = 0)
