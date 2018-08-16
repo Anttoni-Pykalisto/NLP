@@ -1,6 +1,8 @@
 from Finding import Finding
-from Lexicon import Lexicon
+from Vocabulary import Vocabulary
 from Context import Context
+from Batches import BatchList
+from Word2Vec_Model import Model
 from os import listdir
 from os.path import isfile, join
 import numpy as np
@@ -13,8 +15,8 @@ all_finding = []
 all_text = []
 text = ''
 
-#Create lexicon
-lexicon = Lexicon()
+#Create vocabulary
+vocabulary = Vocabulary(min_frequency = 1, max_size = 50)
 
 index = 0
 for f in training_files:
@@ -22,20 +24,25 @@ for f in training_files:
 		line = f.readline()
 		text += line
 		finding = Finding(index, text)
-		lexicon.append(finding.tokens)
+		vocabulary.appendSet(finding.tokens)
 		all_finding.append(finding)
-		all_text.append(finding.sentences)
+		all_text += finding.sentences
 		index += 1
 
-all_sentences = [sentences for findings in all_text for sentences in findings]
+context = Context(all_text, 2)
 
-context = Context(all_sentences, 2)
+vocabulary.buildDataSets()
+vocabulary.saveToFile()
 
-print(context.context)
+batch = BatchList(context.context, 30)
+model = Model(batch_size = batch.batch_size, embedding_size = 5, vocabulary_size = len(vocabulary.word_list))
 
-lexicon.sortSet()
-lexicon.saveToFile()
+model.startTraining(batch)
+print("success?")
 
+#Generating a batch for the skipgram model
+
+#Build model
 
 # word2int={}
 # int2word={}
