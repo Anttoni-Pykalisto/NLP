@@ -7,7 +7,6 @@ class Model:
         self.batch_size = batch_size
         self.embedding_size = embedding_size
         self.vocabulary_size = vocabulary_size
-        self.num_sampled = 64
 
     def addEmbeddingSize(self, size):
         self.embedding_size = size
@@ -17,32 +16,29 @@ class Model:
 
     def createPlaceholders(self):
         self.train_dataset = tf.placeholder(tf.int32, shape=[self.batch_size])
-        self.train_labels = tf.placeholder(tf.int32, shape=[self.batch_size, 1])
+        self.train_labels = tf.placeholder(tf.int32, shape=[self.batch_size, self.vocabulary_size])
         #self.valid_dataset = tf.constant(valid_examples, dtype=tf.int32)
 
     def createSoftmaxVariables(self):
         self.embeddings = tf.Variable(
             tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0))
-        self.softmax_weights = tf.Variable(
-            tf.truncated_normal([self.vocabulary_size, self.embedding_size], stddev = 1.0 / math.sqrt(self.embedding_size)))
-        self.softmax_biases = tf.Variable(tf.zeros([self.vocabulary_size]))
+        self.hidden_weights = tf.Variable(
+            tf.truncated_normal([self.embedding_size, self.vocabulary_size], stddev = 1.0 / math.sqrt(self.embedding_size)))
+        self.hidden_biases = tf.Variable(tf.zeros([self.batch_size, self.vocabulary_size]))
 
     def embeddingLookup(self):
         print(self.embeddings.shape)
-        self.embed = tf.nn.embedding_lookup(self.embeddings, self.train_dataset)
-        print(self.embed.shape)
+        self.embedded_batch = tf.nn.embedding_lookup(self.embeddings, self.train_dataset)
+        print(self.embedded_batch.shape)
 
-    def computeSoftmaxLoss(self):
+    def creatingHiddenLayer(self):
+        self.logits = tf.add(tf.matmul(self.embedded_batch, self.hidden_weights), self.hidden_biases)
+
+    def computeSoftmaxCrossEntropyLoss(self):
         self.loss = tf.reduce_mean(
-            tf.nn.sampled_softmax_loss(
-                weights = self.softmax_weights,
-                biases =  self.softmax_biases,
-                inputs = self.embed,
-                labels = self.train_labels,
-                num_sampled = self.num_sampled,
-                num_classes = self.vocabulary_size
-            )
-        )
+            tf.nn.softmax_cross_entropy_with_logits_v2(
+                labels=self.train_labels, logits=self.logits), 
+                axis = 0)
     
     def computeCrossEntropyLoss(self):
         # self.loss = tf.reduce_mean(
@@ -74,18 +70,20 @@ class Model:
         print("softmax variables created")
         self.embeddingLookup()
         print("embedding lookup created")
-        self.computeSoftmaxLoss()
+        self.creatingHiddenLayer()
+        print("hiddenlayer created")
+        self.computeSoftmaxCrossEntropyLoss()
         print("softmax loss computed")
         self.createSGDOptimizer()
         print("optimizer created")
         self.createInitializerVariable()
         print("created initiliazer variables")
-        with tf.Session() as session:
-            self.init.run(session)
+        with tf.Session() as sess:
+            sess.run(self.init)
             average_loss = 0
             next_batch = batch.next()
             while next_batch is not None:
-                _, loss_value = session.run([self.optimizer, self.loss], feed_dict = {self.train_dataset : next_batch[0], self.train_labels : next_batch[1]})
+                _, loss_value = sess.run([self.optimizer, self.loss], feed_dict = {self.train_dataset : next_batch[0], self.train_labels : next_batch[1]})
                 average_loss += loss_value
                 print(average_loss)
                 next_batch = batch.next()
