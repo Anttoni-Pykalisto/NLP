@@ -8,16 +8,9 @@ class Model:
         self.embedding_size = embedding_size
         self.vocabulary_size = vocabulary_size
 
-    def addEmbeddingSize(self, size):
-        self.embedding_size = size
-
-    def addVocabularySize(self, size):
-        self.vocabulary_size = size
-
     def createPlaceholders(self):
         self.train_dataset = tf.placeholder(tf.int32, shape=[self.batch_size])
         self.train_labels = tf.placeholder(tf.int32, shape=[self.batch_size, self.vocabulary_size])
-        #self.valid_dataset = tf.constant(valid_examples, dtype=tf.int32)
 
     def createSoftmaxVariables(self):
         self.embeddings = tf.Variable(
@@ -27,9 +20,7 @@ class Model:
         self.hidden_biases = tf.Variable(tf.zeros([self.batch_size, self.vocabulary_size]))
 
     def embeddingLookup(self):
-        print(self.embeddings.shape)
         self.embedded_batch = tf.nn.embedding_lookup(self.embeddings, self.train_dataset)
-        print(self.embedded_batch.shape)
 
     def creatingHiddenLayer(self):
         self.logits = tf.add(tf.matmul(self.embedded_batch, self.hidden_weights), self.hidden_biases)
@@ -48,36 +39,25 @@ class Model:
         # norm = tf.sqrt(tf.reduce_sum(tf.square(self.mbeddings), 1, keepdims=True))
         # normalized_embeddings = self.embeddings / norm
         # valid_embeddings = tf.nn.embedding_lookup(normalized_embeddings, self.valid_dataset)
-        # self.similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))
+        # self.similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))        
 
-    def createInitializerVariable(self):
-        self.init = tf.global_variables_initializer()
-
-    def createSaver(self):
+    def addSaver(self):
         self.saver = tf.train.Saver()
 
-    def startTraining(self, batch):
+    def fit(self, batch, epochs = 10):
         self.createPlaceholders()
-        print("placeholders created")
-        print(self.train_dataset)
-        print(self.train_labels)
         self.createSoftmaxVariables()
-        print("softmax variables created")
         self.embeddingLookup()
-        print("embedding lookup created")
         self.creatingHiddenLayer()
-        print("hiddenlayer created")
         self.computeSoftmaxCrossEntropyLoss()
-        print("softmax loss computed")
         self.createSGDOptimizer()
-        print("optimizer created")
-        self.createInitializerVariable()
-        print("created initiliazer variables")
+        
+        init = tf.global_variables_initializer()
         with tf.Session() as sess:
-            sess.run(self.init)
+            sess.run(init)
             average_loss = 0
             iteration = 1
-            for x in range(10):
+            for _ in range(epochs):
                 next_batch = batch.next()
                 while next_batch is not None:
                     _, loss_value = sess.run([self.optimizer, self.loss], feed_dict = {self.train_dataset : next_batch[0], self.train_labels : next_batch[1]})
@@ -89,14 +69,3 @@ class Model:
                     next_batch = batch.next()
                 print("----------------------------------------")
                 print(self.embeddings.eval())
-
-# loss = tf.nn.softmax_cross_entropy_with_logits(labels = y, logits = x)
-# mean_loss = tf.reduce_mean(loss, axis = 0)
-# with tf.Session() as sess:
-#     value = sess.run(mean_loss)
-#     print(value)
-
-# #######
-
-# hidden_layer = tf.add(tf.matmul(x, weights_hidden), biases_hidden)
-# optimizer = tf.train....
