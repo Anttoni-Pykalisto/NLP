@@ -7,12 +7,12 @@ from nltk.stem.snowball import SnowballStemmer
 
 class Finding:
 
-    def __init__(self, id, text):
+    def __init__(self, id, text, remove_stopwords="on", stemming="on"):
         self.id = id
         self.text = text
-        self.tokens, self.sentences = self.creatingTokens()
+        self.tokens, self.sentences = self.creatingTokens(remove_stopwords,stemming)
 
-    def creatingTokens(self):
+    def creatingTokens(self,remove_stopwords,stemming):
         tokenizer = RegexpTokenizer(r'\s+', gaps = True)
         stop_words = set(stopwords.words('english'))
         stemmer = SnowballStemmer("english", ignore_stopwords = True)
@@ -23,7 +23,10 @@ class Finding:
         for sentences in processedString:
             temp_tokens = tokenizer.tokenize(sentences)
             temp_tokens = [self.cleanTokens(t) for t in temp_tokens]
-            temp_tokens = [stemmer.stem(t) for t in temp_tokens if not t in stop_words]
+            if remove_stopwords=="on":
+                temp_tokens = [t for t in temp_tokens if not t in stop_words]
+            if stemming=="on":
+                temp_tokens=[stemmer.stem(t) for t in temp_tokens]
             tokens += temp_tokens
             sentence.append(temp_tokens)
         return [tokens,sentence]
