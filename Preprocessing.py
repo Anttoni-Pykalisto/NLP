@@ -38,12 +38,12 @@ class Preprocessing:
 		else:
 			vocabulary=self.vocabulary_input
 
-		finding_array=[index,finding_text]
-		for index, text in finding_array:
-			finding = Finding(index, text,self.remove_stopwords,self.stemming)
+		for i in range(len(index))
+			finding = Finding(index[i], text[i],self.remove_stopwords,self.stemming)
 			vocabulary.appendSet(finding.tokens)
 			all_finding.append(finding)
 			all_text += finding.sentences
+		vocabulary.buildDataSets()
 		if self.create_context=="on":
 			context = Context(all_text, self.context_window_size)
 		if self.create_context=="on" and self.create_batches=="on":
