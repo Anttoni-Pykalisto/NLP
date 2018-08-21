@@ -40,4 +40,4 @@ class Preprocessing:
 			context = Context(all_text, self.context_window_size)
 		if self.create_context=="on" and self.create_batches=="on":
 			batch = BatchList(context.context, self.batch_size, len(vocabulary.word_list))
-		return vocabulary,batch,all_finding
+		return [vocabulary,batch,all_finding]
