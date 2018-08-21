@@ -1,7 +1,6 @@
 import os
 
-class  Vocabulary:
-    wordSet = set()
+class Vocabulary:
     count = {}
     word_to_index = {}
     word_list = []
@@ -11,7 +10,6 @@ class  Vocabulary:
         self.max_size = max_size
 
     def appendSet(self, token_set):
-        #self.wordSet.update(token_set)
         for token in token_set:
             if self.count.get(token) is not None:
                 value = self.count.get(token) + 1
@@ -55,7 +53,7 @@ class  Vocabulary:
         for word in self.word_list:
             f.write(word + '\n')
         f.close()
-        f = open("index_to_word.txt","w+")
+        f = open("word_to_index.txt","w+")
         for word, index in self.word_to_index.items():
             f.write(word + ": " + str(index) + '\n')
         f.close()

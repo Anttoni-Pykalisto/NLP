@@ -12,7 +12,7 @@ training_files = ['TrainingText/' + f for f in listdir('TrainingText/') if isfil
 
 class Preprocessing:
 	@staticmethod
-	def run(training_files,vocabulary_input=None,remove_stopwords="on",stemming="off",create_context="on",create_batches="on",batch_size=30):
+	def run(training_files,vocabulary_input=None,remove_stopwords="on",stemming="on",create_context="on",create_batches="on",batch_size=30):
 		all_finding = []
 		all_text = []
 		text = ''
@@ -25,7 +25,7 @@ class Preprocessing:
 			with open(f, "r", encoding="utf-8") as f:
 				line = f.readline()
 				text += line
-				finding = Finding(index, text,remove_stopwords,stemming)
+				finding = Finding(index, text, remove_stopwords, stemming)
 				vocabulary.appendSet(finding.tokens)
 				all_finding.append(finding)
 				all_text += finding.sentences

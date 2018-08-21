@@ -1,38 +1,75 @@
 import tensorflow as tf
+import pandas as pd
 import math
+from Batches import BatchList
+from Vocabulary import Vocabulary
 
 class Model:
     
-    def __init__(self, batch_size = 0, embedding_size = 0, vocabulary_size = 0):
-        self.batch_size = batch_size
+    def __init__(self, embedding_size = 50, epochs = 10, learning_rate = 0.01, optimizer = "SGD", model_file = None):
+        self.dataframe = None
+        self.vocabulary = None
+        self.context_batch = None
+        self.batch_size = None
         self.embedding_size = embedding_size
-        self.vocabulary_size = vocabulary_size
+        self.vocabulary_size = None
+        self.epochs = epochs
+        self.learning_rate = learning_rate
+        self.optimizer = optimizer
+        self.model_file = model_file
 
-    def createPlaceholders(self):
+    def set_input(self, preprocessed_data, input):
+            self.vocabulary = preprocessed_data[0]
+            self.context_batch = preprocessed_data[1]
+            self.findings = preprocessed_data[2]
+            self.batch_size = self.context_batch.batch_size
+            self.vocabulary_size = self.vocabulary.getVocabSize()
+            self.dataframe = input
+            
+    def addPlaceholders(self):
         self.train_dataset = tf.placeholder(tf.int32, shape=[self.batch_size])
         self.train_labels = tf.placeholder(tf.int32, shape=[self.batch_size, self.vocabulary_size])
 
-    def createSoftmaxVariables(self):
+    def addSoftmaxVariables(self):
         self.embeddings = tf.Variable(
             tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0))
         self.hidden_weights = tf.Variable(
             tf.truncated_normal([self.embedding_size, self.vocabulary_size], stddev = 1.0 / math.sqrt(self.embedding_size)))
         self.hidden_biases = tf.Variable(tf.zeros([self.batch_size, self.vocabulary_size]))
 
-    def embeddingLookup(self):
+    def addEmbeddingLookup(self):
         self.embedded_batch = tf.nn.embedding_lookup(self.embeddings, self.train_dataset)
 
-    def creatingHiddenLayer(self):
+    def addHiddenLayer(self):
         self.logits = tf.add(tf.matmul(self.embedded_batch, self.hidden_weights), self.hidden_biases)
 
-    def computeSoftmaxCrossEntropyLoss(self):
+    def addSoftmaxCrossEntropyLoss(self):
         self.loss = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(
                 labels=self.train_labels, logits=self.logits), 
                 axis = 0)
 
-    def createSGDOptimizer(self):
-        self.optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(self.loss)
+    def addSGDOptimizer(self):
+        self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
+
+    def addAdamOptimizer(self):
+        self.optimizer = tf.train.AdamOptimizer().minimize(self.loss)
+
+    def addAdagradOptimizer(self):
+        self.optimizer = tf.train.AdagradOptimizer(self.learning_rate).minimize(self.loss)
+
+    def createDataFrameOutput(self):
+        vector_column = pd.DataFrame(columns = 'VECTOR')
+        for finding in self.findings:
+            word_tokens = finding.tokens
+            vector_tokens = tf.zeros([self.embedding_size])
+            for word in word_tokens:
+                vector_tokens += self.embeddings.eval()[Vocabulary.getIndex(word),:]
+            print(vector_tokens.eval())
+            vector_column['VECTOR'].append(vector_tokens.eval())
+        self.dataframe['VECTOR'] = vector_column['VECTOR']
+        print(self.dataframe.values())
+        return self.dataframe
 
     def computeCosineSimilarity(self):
         pass
@@ -42,30 +79,39 @@ class Model:
         # self.similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))        
 
     def addSaver(self):
-        self.saver = tf.train.Saver()
+        self.model_file = tf.train.Saver()
 
-    def fit(self, batch, epochs = 10):
-        self.createPlaceholders()
-        self.createSoftmaxVariables()
-        self.embeddingLookup()
-        self.creatingHiddenLayer()
-        self.computeSoftmaxCrossEntropyLoss()
-        self.createSGDOptimizer()
+    def fit(self):
+        self.addPlaceholders()
+        self.addSoftmaxVariables()
+        self.addEmbeddingLookup()
+        self.addHiddenLayer()
+        self.addSoftmaxCrossEntropyLoss()
+
+        if self.optimizer.toLower() == "sgd": 
+            self.addSGDOptimizer()
+        elif self.optimizer.toLower() == "adam": 
+            self.addAdamOptimizer()
+        elif self.optimizer.toLower() == "adagrad": 
+            self.addAdagradOptimizer()
+
+        if self.model_file == True: self.addSaver()
         
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
-            average_loss = 0
+            total_loss = 0
             iteration = 1
-            for _ in range(epochs):
-                next_batch = batch.next()
+            for _ in range(self.epochs):
+                next_batch = self.context_batch.next()
                 while next_batch is not None:
                     _, loss_value = sess.run([self.optimizer, self.loss], feed_dict = {self.train_dataset : next_batch[0], self.train_labels : next_batch[1]})
-                    average_loss += loss_value
-                    mean_loss = average_loss / iteration
+                    total_loss += loss_value
+                    mean_loss = total_loss / iteration
                     iteration += 1
                     print("iteration:", iteration)
                     print("mean loss:", mean_loss)
-                    next_batch = batch.next()
+                    next_batch = self.context_batch.next()
                 print("----------------------------------------")
                 print(self.embeddings.eval())
+            return self.createDataFrameOutput()
