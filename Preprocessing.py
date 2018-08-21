@@ -5,38 +5,38 @@ from Batches import BatchList
 from os import listdir
 from os.path import isfile, join
 import numpy as np
+import pandas as pd
+from pandas import *
 import csv
 import os
 
-training_files = ['TrainingText/' + f for f in listdir('TrainingText/') if isfile(join('TrainingText/', f))]
+
 
 class Preprocessing:
-	@staticmethod
-	def run(training_files,vocabulary_input=None,remove_stopwords="on",stemming="off",create_context="on",create_batches="on",batch_size=30):
-		all_finding = []
-		all_text = []
-		text = ''
-		if vocabulary_input==None:
-			vocabulary = Vocabulary(min_frequency = 3, max_size = 300)
+	def __init__(self, vocabulary_input=None, vocabulary_min_frequency=3, vocabulary_max_size=300,remove_stopwords="on",stemming="on",create_context="on",create_batches="on",batch_size=30):
+		self.vocabulary_input=vocabulary_input
+		self.remove_stopwords=remove_stopwords
+		self.stemming=stemming
+		self.create_context=create_context
+		self.create_batches=create_batches
+		self.batch_size=batch_size
+	
+	def run(self, input):
+		index=input['ID'].tolist()
+		finding_text=input['TEXT'].tolist()
+		if self.vocabulary_input==None:
+			vocabulary = Vocabulary(vocabulary_min_frequency,vocabulary_max_size)
 		else:
 			vocabulary=vocabulary_input
-		index = 0
-		for f in training_files:
-			with open(f, "r", encoding="utf-8") as f:
-				line = f.readline()
-				text += line
-				finding = Finding(index, text,remove_stopwords,stemming)
-				vocabulary.appendSet(finding.tokens)
-				all_finding.append(finding)
-				all_text += finding.sentences
-				index += 1
-				output=all_text
-		if create_context=="on":
+			
+		finding_array=[index,finding_text]
+		for index, text in finding_array:
+			finding = Finding(index, text,remove_stopwords,stemming)
+			vocabulary.appendSet(finding.tokens)
+			all_finding.append(finding)
+			all_text += finding.sentences
+		if self.create_context=="on":
 			context = Context(all_text, 2)
-			output=context
-		if create_context=="on" and create_batches=="on":
-			batch = BatchList(context.context, batch_size, len(vocabulary.word_list))
-			output=batch
-		return output
-
-output=Preprocessing.run(training_files)
+		if self.create_context=="on" and self.create_batches=="on":
+			batch = BatchList(context.context, self.batch_size, len(vocabulary.word_list))
+		return vocabulary,batch,all_finding
