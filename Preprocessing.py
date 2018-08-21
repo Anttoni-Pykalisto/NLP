@@ -15,6 +15,8 @@ import os
 class Preprocessing:
 	def __init__(self, input=None,vocabulary_input=None, vocabulary_min_frequency=3, vocabulary_max_size=300,remove_stopwords="on",stemming="on",create_context="on",context_window_size=2,create_batches="on",batch_size=30):
 		self.vocabulary_input=vocabulary_input
+		self.vocabulary_min_frequency=vocabulary_min_frequency
+		self.vocabulary_max_size=vocabulary_max_size
 		self.remove_stopwords=remove_stopwords
 		self.stemming=stemming
 		self.create_context=create_context
@@ -29,10 +31,12 @@ class Preprocessing:
 	def preprocess(self):
 		index=self.input['ID'].tolist()
 		finding_text=self.input['TEXT'].tolist()
+		all_finding=[]
+		all_text=[]
 		if self.vocabulary_input==None:
-			vocabulary = Vocabulary(vocabulary_min_frequency,vocabulary_max_size)
+			vocabulary = Vocabulary(self.vocabulary_min_frequency,self.vocabulary_max_size)
 		else:
-			vocabulary=vocabulary_input
+			vocabulary=self.vocabulary_input
 
 		finding_array=[index,finding_text]
 		for index, text in finding_array:
