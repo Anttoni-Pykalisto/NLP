@@ -13,7 +13,7 @@ import os
 
 
 class Preprocessing:
-	def __init__(self, vocabulary_input=None, vocabulary_min_frequency=3, vocabulary_max_size=300,remove_stopwords="on",stemming="on",create_context="on",context_window_size=2,create_batches="on",batch_size=30):
+	def __init__(self, input=None,vocabulary_input=None, vocabulary_min_frequency=3, vocabulary_max_size=300,remove_stopwords="on",stemming="on",create_context="on",context_window_size=2,create_batches="on",batch_size=30):
 		self.vocabulary_input=vocabulary_input
 		self.remove_stopwords=remove_stopwords
 		self.stemming=stemming
@@ -21,10 +21,14 @@ class Preprocessing:
 		self.context_window_size=context_window_size
 		self.create_batches=create_batches
 		self.batch_size=batch_size
+		self.input=input
+
+	def set_input(self,input):
+		self.input=input
 	
-	def run(self, input):
-		index=input['ID'].tolist()
-		finding_text=input['TEXT'].tolist()
+	def preprocess(self):
+		index=self.input['ID'].tolist()
+		finding_text=self.input['TEXT'].tolist()
 		if self.vocabulary_input==None:
 			vocabulary = Vocabulary(vocabulary_min_frequency,vocabulary_max_size)
 		else:
