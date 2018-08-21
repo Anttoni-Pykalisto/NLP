@@ -18,6 +18,7 @@ class Preprocessing:
 		self.remove_stopwords=remove_stopwords
 		self.stemming=stemming
 		self.create_context=create_context
+		self.context_window_size=context_window_size
 		self.create_batches=create_batches
 		self.batch_size=batch_size
 	
@@ -31,12 +32,12 @@ class Preprocessing:
 
 		finding_array=[index,finding_text]
 		for index, text in finding_array:
-			finding = Finding(index, text,remove_stopwords,stemming)
+			finding = Finding(index, text,self.remove_stopwords,self.stemming)
 			vocabulary.appendSet(finding.tokens)
 			all_finding.append(finding)
 			all_text += finding.sentences
 		if self.create_context=="on":
-			context = Context(all_text, context_window_size)
+			context = Context(all_text, self.context_window_size)
 		if self.create_context=="on" and self.create_batches=="on":
 			batch = BatchList(context.context, self.batch_size, len(vocabulary.word_list))
 		return vocabulary,batch,all_finding

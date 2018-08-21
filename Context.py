@@ -5,10 +5,8 @@ class Context:
 	def createContext(self,sentences,window):
 		data=[]
 		for sentence in sentences:
-			temp_data=[]
 			for word_index,word in enumerate(sentence):
 				for nb_word in sentence[max(word_index-window,0):min(word_index+window,len(sentence))+1]:
 					if nb_word != word:
-						temp_data.append([word,nb_word])
-			data.append(temp_data)
+						data.append([word,nb_word])
 		return data
