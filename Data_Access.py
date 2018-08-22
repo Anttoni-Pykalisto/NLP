@@ -14,6 +14,7 @@ class TextFileAccess:
             with open(f, "r", encoding="utf-8") as f:
                 self.id.append(index)
                 self.text.append(f.readline().replace('\n', ' '))
+                self.vector.append([])
                 index += 1
         
     def retrieve(self):

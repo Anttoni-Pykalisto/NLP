@@ -1,4 +1,4 @@
-from Finding import Finding
+from Text import Text
 from gensim.models import Word2Vec
 from os import listdir
 from os.path import isfile, join
@@ -14,7 +14,7 @@ for f in training_files:
     with open(f, "r", encoding="utf-8") as f:
         line = f.readline()
         text += line
-    finding = Finding(index, text)
+    finding = Text(index, text)
     all_finding.append(finding)
     all_text.append(finding.sentences)
     index += 1

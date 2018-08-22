@@ -10,3 +10,4 @@ preprocessing.set_input(input)
 vectorization = Model()
 vectorization.set_input(preprocessed_data, original_dataframe)
 output = vectorization.fit()
+output

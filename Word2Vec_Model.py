@@ -24,7 +24,7 @@ class Model:
     def set_input(self, preprocessed_data, input):
         self.vocabulary = preprocessed_data[0]
         self.context_batch = preprocessed_data[1]
-        self.findings = preprocessed_data[2]
+        self.texts = preprocessed_data[2]
         self.batch_size = self.context_batch.batch_size
         self.vocabulary_size = self.vocabulary.getVocabSize()
         self.dataframe = input
@@ -65,15 +65,16 @@ class Model:
     def createDataFrameOutput(self):
         vector_column = []
         embedding_lookup_table = self.embeddings.eval()
-        for finding in self.findings:
-            word_tokens = finding.tokens
+        for text in self.texts:
+            word_tokens = text.tokens
             vector_tokens = np.zeros([self.embedding_size])
             for word in word_tokens:
-                if Vocabulary.getIndex(word) is not None:
-                    vector_tokens += embedding_lookup_table[Vocabulary.getIndex(word), :]
+                word_index = Vocabulary.getIndex(word)
+                if word_index is not None:
+                    vector_tokens += embedding_lookup_table[word_index, :]
             vector_column.append(vector_tokens)
-        filled_column = pd.DataFrame({'VECTOR': vector_column})
-        self.dataframe['VECTOR'] = filled_column['VECTOR']
+        pd_column = pd.DataFrame({'VECTOR': vector_column})
+        self.dataframe['VECTOR'] = pd_column['VECTOR']
         return self.dataframe
 
     def computeCosineSimilarity(self):
@@ -130,3 +131,9 @@ class Model:
             raise ValueError("epoch value should be greater than 0")
         if optimizer.lower() != ("sgd" or "adam" or "adagrad"):
             raise ValueError("wrong optimizer selected")
+
+    def check_input_parameters(self, preprocessed_data, input):
+        if len(preprocessed_data) != 3:
+            raise ValueError("invalid preprocessed data")
+        if pd.DataFrame.__instancecheck__(input) is False:
+            raise ValueError("not a dataframe object")
