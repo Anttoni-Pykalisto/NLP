@@ -1,12 +1,15 @@
 import tensorflow as tf
 import pandas as pd
+import numpy as np
 import math
 from Batches import BatchList
 from Vocabulary import Vocabulary
 
+
 class Model:
-    
-    def __init__(self, embedding_size = 50, epochs = 10, learning_rate = 0.01, optimizer = "SGD", model_file = None):
+
+    def __init__(self, embedding_size=50, epochs=10, learning_rate=0.01, optimizer="SGD", model_file=None):
+        self.checkConstructorParameters(embedding_size, epochs, learning_rate, optimizer)
         self.dataframe = None
         self.vocabulary = None
         self.context_batch = None
@@ -15,17 +18,17 @@ class Model:
         self.vocabulary_size = None
         self.epochs = epochs
         self.learning_rate = learning_rate
-        self.optimizer = optimizer
+        self.optimizer = optimizer.lower()
         self.model_file = model_file
 
     def set_input(self, preprocessed_data, input):
-            self.vocabulary = preprocessed_data[0]
-            self.context_batch = preprocessed_data[1]
-            self.findings = preprocessed_data[2]
-            self.batch_size = self.context_batch.batch_size
-            self.vocabulary_size = self.vocabulary.getVocabSize()
-            self.dataframe = input
-            
+        self.vocabulary = preprocessed_data[0]
+        self.context_batch = preprocessed_data[1]
+        self.findings = preprocessed_data[2]
+        self.batch_size = self.context_batch.batch_size
+        self.vocabulary_size = self.vocabulary.getVocabSize()
+        self.dataframe = input
+
     def addPlaceholders(self):
         self.train_dataset = tf.placeholder(tf.int32, shape=[self.batch_size])
         self.train_labels = tf.placeholder(tf.int32, shape=[self.batch_size, self.vocabulary_size])
@@ -34,7 +37,8 @@ class Model:
         self.embeddings = tf.Variable(
             tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0))
         self.hidden_weights = tf.Variable(
-            tf.truncated_normal([self.embedding_size, self.vocabulary_size], stddev = 1.0 / math.sqrt(self.embedding_size)))
+            tf.truncated_normal([self.embedding_size, self.vocabulary_size],
+                                stddev=1.0 / math.sqrt(self.embedding_size)))
         self.hidden_biases = tf.Variable(tf.zeros([self.batch_size, self.vocabulary_size]))
 
     def addEmbeddingLookup(self):
@@ -46,8 +50,8 @@ class Model:
     def addSoftmaxCrossEntropyLoss(self):
         self.loss = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(
-                labels=self.train_labels, logits=self.logits), 
-                axis = 0)
+                labels=self.train_labels, logits=self.logits),
+            axis=0)
 
     def addSGDOptimizer(self):
         self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
@@ -59,16 +63,17 @@ class Model:
         self.optimizer = tf.train.AdagradOptimizer(self.learning_rate).minimize(self.loss)
 
     def createDataFrameOutput(self):
-        vector_column = pd.DataFrame(columns = 'VECTOR')
+        vector_column = []
+        embedding_lookup_table = self.embeddings.eval()
         for finding in self.findings:
             word_tokens = finding.tokens
-            vector_tokens = tf.zeros([self.embedding_size])
+            vector_tokens = np.zeros([self.embedding_size])
             for word in word_tokens:
-                vector_tokens += self.embeddings.eval()[Vocabulary.getIndex(word),:]
-            print(vector_tokens.eval())
-            vector_column['VECTOR'].append(vector_tokens.eval())
-        self.dataframe['VECTOR'] = vector_column['VECTOR']
-        print(self.dataframe.values())
+                if Vocabulary.getIndex(word) is not None:
+                    vector_tokens += embedding_lookup_table[Vocabulary.getIndex(word), :]
+            vector_column.append(vector_tokens)
+        filled_column = pd.DataFrame({'VECTOR': vector_column})
+        self.dataframe['VECTOR'] = filled_column['VECTOR']
         return self.dataframe
 
     def computeCosineSimilarity(self):
@@ -88,15 +93,16 @@ class Model:
         self.addHiddenLayer()
         self.addSoftmaxCrossEntropyLoss()
 
-        if self.optimizer.toLower() == "sgd": 
+        if self.optimizer == "sgd":
             self.addSGDOptimizer()
-        elif self.optimizer.toLower() == "adam": 
+        elif self.optimizer == "adam":
             self.addAdamOptimizer()
-        elif self.optimizer.toLower() == "adagrad": 
+        elif self.optimizer == "adagrad":
             self.addAdagradOptimizer()
 
-        if self.model_file == True: self.addSaver()
-        
+        if self.model_file:
+            self.addSaver()
+
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
@@ -105,7 +111,8 @@ class Model:
             for _ in range(self.epochs):
                 next_batch = self.context_batch.next()
                 while next_batch is not None:
-                    _, loss_value = sess.run([self.optimizer, self.loss], feed_dict = {self.train_dataset : next_batch[0], self.train_labels : next_batch[1]})
+                    _, loss_value = sess.run([self.optimizer, self.loss], feed_dict={self.train_dataset: next_batch[0],
+                                                                                     self.train_labels: next_batch[1]})
                     total_loss += loss_value
                     mean_loss = total_loss / iteration
                     iteration += 1
@@ -115,3 +122,11 @@ class Model:
                 print("----------------------------------------")
                 print(self.embeddings.eval())
             return self.createDataFrameOutput()
+
+    def checkConstructorParameters(self, embedding_size, epochs, learning_rate, optimizer):
+        if embedding_size < 1:
+            raise ValueError("embedding size should be greater than 0")
+        if epochs < 1:
+            raise ValueError("epoch value should be greater than 0")
+        if optimizer.lower() != ("sgd" or "adam" or "adagrad"):
+            raise ValueError("wrong optimizer selected")
